@@ -1,5 +1,4 @@
 #include "stm32f103xb.h"
-#include "core_cm3.h"
 
 void SysTick_Handler(void) {
     GPIOC->ODR ^= GPIO_ODR_ODR13;
@@ -29,11 +28,11 @@ int main(void) {
     // Set count direction as up-counting
     TIM1->CR1 &= ~TIM_CR1_DIR;
     // Clock prescalaer (16 bit value, max 65,535)
-    TIM1->PSC = 40000 - 1;
+    TIM1->PSC = 4000 - 1;
     // Auto-realod value, for up counting goes from 0->ARR
-    TIM1->ARR = 10 - 1;
+    TIM1->ARR = 100 - 1;
     // Capture/compare register can be any value 0 < CCR < ARR
-    TIM1->CCR1 = 5;
+    TIM1->CCR1 = 50;
     // Main output enable (MOE): 0 = Disable, 1 = Enable
 	TIM1->BDTR |= TIM_BDTR_MOE;
 	// Clear output compare mode bits of channel 1
@@ -62,7 +61,7 @@ int main(void) {
     // Disable SysTick IRQ and SysTick counter
     SysTick->CTRL = 0;                            
     // Set reload register
-    SysTick->LOAD = 4000000 - 1;
+    SysTick->LOAD = 20000 - 1;
     // Set interrupt priority of SysTick as least urgent
     // (highest priority number). This function is defined in core_cm3.h
     NVIC_SetPriority(SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);
