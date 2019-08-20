@@ -1,0 +1,27 @@
+# Author: Yusef Karim
+# To install cargo-make run: cargo install cargo-make
+[env]
+RELEASE_EXE   = "target/thumbv7m-none-eabi/debug/${CARGO_MAKE_CRATE_NAME}"
+RELEASE_BIN   = "target/thumbv7m-none-eabi/debug/${CARGO_MAKE_CRATE_NAME}.bin"
+TRIPLE 		  = "arm-none-eabi"
+GDB			  = "${TRIPLE}-gdb"
+OBJCOPY		  = "${TRIPLE}-objcopy"
+OPENOCD_TRGT  = "-f target/stm32f1x.cfg"
+OPENOCD_INTF  = "-f interface/stlink-v2.cfg"
+OPENOCD_CMD	  = "openocd ${OPENOCD_INTF} ${OPENOCD_TRGT} -c"
+
+
+[tasks.flash]
+description = ""
+dependencies = ["build", "bin"]
+script = ["${OPENOCD_CMD} \"program ${RELEASE_BIN} reset exit 0x08000000\""]
+
+[tasks.bin]
+description = "Copies compiled executable to raw binary using objcopy"
+dependencies = ["build"]
+script = ["${OBJCOPY} -O binary ${RELEASE_EXE} ${RELEASE_BIN}"]
+
+
+[tasks.erase]
+description = "Uses OpenOCD to erase all flash memory on target board"
+script = ["${OPENOCD_CMD} \"init; reset halt; stm32f1x mass_erase 0; exit\""]
