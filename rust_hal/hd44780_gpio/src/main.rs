@@ -5,6 +5,7 @@ extern crate panic_halt;
 
 use nb::block;
 // use cortex_m::{self, asm::nop};
+use cortex_m::{self, singleton};
 // use embedded_hal::digital::v2::OutputPin;
 use cortex_m_rt::{entry, exception, ExceptionFrame};
 use stm32f1xx_hal::{
@@ -47,6 +48,10 @@ fn main() -> ! {
     // to HAL structs
     let mut flash = board_peripherals.FLASH.constrain();
     let mut rcc = board_peripherals.RCC.constrain();
+    // Alternate GPIO register
+    let mut afio = board_peripherals.AFIO.constrain(&mut rcc.apb2);
+    // Channels for DMA1 controller
+    let channels = board_peripherals.DMA1.split(&mut rcc.ahb);
 
     // Freeze the configuration of all clocks, storing them in clocks var
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
@@ -64,7 +69,6 @@ fn main() -> ! {
     let mut lcd = HD44780::new_4bit(rs, en, d4, d5, d6, d7, delay);
 
     /* GPIO Port B USART3 configuration */
-    let mut afio = board_peripherals.AFIO.constrain(&mut rcc.apb2);
     let tx = gpiob.pb10.into_alternate_push_pull(&mut gpiob.crh);
     let rx = gpiob.pb11;
     let serial = Serial::usart3(
@@ -79,7 +83,15 @@ fn main() -> ! {
         &mut rcc.apb1,
     );
 
-    let (mut tx, mut rx) = serial.split();
+    // let (mut tx, mut rx) = serial.split();
+    let rx = serial.split().1.with_dma(channels.3);
+    let buf = singleton!(: [u8; 8] = [0; 8]).unwrap();
+    let (buf, rx) = rx.read(buf).wait();
+    hprintln!("{:?}", buf).unwrap();
+    let (buf, rx) = rx.read(buf).wait();
+    hprintln!("{:?}", buf).unwrap();
+    let (buf, rx) = rx.read(buf).wait();
+    hprintln!("{:?}", buf).unwrap();
 
     // Setup code
     lcd.reset();
@@ -94,21 +106,24 @@ fn main() -> ! {
     );
 
 
-    // let top_msg = "Hello, world!";
-    // let bot_msg = "Count: ";
-    // let ascii_0: u8 = 48;
-    // let ascii_9: u8 = 57;
-    // let mut i: u8 = ascii_0;
 
     // lcd.write_str(top_msg).unwrap();
+    // let intro_message = b"Welcome! Enter messages to display: ";
+    // for byte in intro_message.iter() {
+        // block!(tx.write(*byte)).ok();
+    // }
 
-    let intro_message = b"Welcome! Enter messages to display: ";
-    for byte in intro_message.iter() {
-        block!(tx.write(*byte)).ok();
-    }
-
-    let mut trigger_byte: u8;
+    // let mut trigger_byte: u8;
+    // let zero: &mut usize = &mut 0;
+    let zero: usize = 0;
     loop {
+        let (buf, _rx) = rx.read(buf).wait();
+        // if _buf.len() > zero {
+        // for x in _buf.as_mut() {
+            // hprintln!("{}", x).unwrap();
+        // }
+        // let (_buf, _rx) = rx.read(buf).wait();
+        /*
         trigger_byte = block!(rx.read()).unwrap();
         match trigger_byte {
             b'~' => {
@@ -119,9 +134,10 @@ fn main() -> ! {
             }
             b'^' => (),
             _ => (),
-        }
+        }*/
     }
 }
+
 
 #[exception]
 fn HardFault(ef: &ExceptionFrame) -> ! {
