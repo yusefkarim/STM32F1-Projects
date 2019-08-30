@@ -3,7 +3,6 @@
 #![no_main]
 extern crate panic_halt;
 
-// use core::sync::atomic::{AtomicBool, Ordering};
 use core::ops::Deref;
 use core::cell::RefCell;
 use cortex_m::{self, peripheral::syst::SystClkSource, asm::nop};
@@ -11,7 +10,6 @@ use cortex_m::interrupt::{self, Mutex};
 use cortex_m_rt::{entry, exception};
 use stm32f1::stm32f103;
 
-// static SYSTICK_EVENT: AtomicBool = AtomicBool::new(false);
 static PC: Mutex<RefCell<Option<stm32f103::GPIOC>>> =
              Mutex::new(RefCell::new(None));
 
@@ -44,27 +42,18 @@ fn main() -> ! {
 
     loop {
         nop();
-        // if SYSTICK_EVENT.compare_and_swap(true, false, Ordering::Relaxed) {
-            // if gpioc.odr.read().odr13().is_high() {
-                // gpioc.odr.write(|w| w.odr13().low());
-            // } else {
-                // gpioc.odr.write(|w| w.odr13().high());
-            // }
-        // }
     }
 }
 
 #[exception]
 fn SysTick() {
-    // SYSTICK_EVENT.compare_and_swap(false, true, Ordering::Relaxed);
     interrupt::free(|cs| {
         if let Some(ref gpioc) = PC.borrow(cs).borrow().deref() {
-            gpioc.odr.write(|w| w.odr13().high());
+            if gpioc.odr.read().odr13().is_high() {
+                gpioc.odr.write(|w| w.odr13().low());
+            } else {
+                gpioc.odr.write(|w| w.odr13().high());
+            }
         }
-        // if gpioc.as_ref().unwrap().odr.read().odr13().is_high() {
-            // gpioc.as_ref().unwrap().odr.write(|w| w.odr13().low());
-        // } else {
-            // gpioc.as_ref().unwrap().odr.write(|w| w.odr13().high());
-        // }
     });
 }

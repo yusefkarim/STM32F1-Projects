@@ -117,7 +117,8 @@ fn main() -> ! {
     // let zero: &mut usize = &mut 0;
     let zero: usize = 0;
     loop {
-        let (buf, _rx) = rx.read(buf).wait();
+        let (buf, rx) = rx.read(buf).wait();
+        hprintln!("{:?}", buf).unwrap();
         // if _buf.len() > zero {
         // for x in _buf.as_mut() {
             // hprintln!("{}", x).unwrap();
