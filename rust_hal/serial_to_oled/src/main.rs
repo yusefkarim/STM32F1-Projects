@@ -56,7 +56,7 @@ fn main() -> ! {
         (tx, rx),
         &mut afio.mapr,
         Config::default()
-            .baudrate(115_200.bps())
+            .baudrate(9600.bps())
             .stopbits(StopBits::STOP1)
             .parity_none(),
         clocks,

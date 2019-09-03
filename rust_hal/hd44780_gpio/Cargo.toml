@@ -14,6 +14,10 @@ lto = true
 debug = false
 
 [dependencies]
+# Semihosting for ARM Cortex-M processors
+# https://docs.rs/cortex-m-semihosting/0.3.4/cortex_m_semihosting/
+cortex-m-semihosting = "0.3.4"
+
 # Provides panic handler for halting the CPU (in an infinite loop)
 # https://lib.rs/crates/panic-halt
 panic-halt = "0.2.0"
@@ -46,7 +50,3 @@ stm32f1xx-hal = {version = "0.4.0", features = ["stm32f103", "rt"]}
 # https://docs.rs/hd44780-driver/0.3.0/hd44780_driver/
 # hd44780-driver = "0.3.0"
 hd44780-driver = { path = "./hd44780-driver" }
-
-# Semihosting for ARM Cortex-M processors
-# https://docs.rs/cortex-m-semihosting/0.3.4/cortex_m_semihosting/
-cortex-m-semihosting = "0.3.4"

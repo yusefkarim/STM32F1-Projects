@@ -84,14 +84,14 @@ fn main() -> ! {
     );
 
     // let (mut tx, mut rx) = serial.split();
-    let rx = serial.split().1.with_dma(channels.3);
-    let buf = singleton!(: [u8; 8] = [0; 8]).unwrap();
-    let (buf, rx) = rx.read(buf).wait();
-    hprintln!("{:?}", buf).unwrap();
-    let (buf, rx) = rx.read(buf).wait();
-    hprintln!("{:?}", buf).unwrap();
-    let (buf, rx) = rx.read(buf).wait();
-    hprintln!("{:?}", buf).unwrap();
+    let mut rx_option = Some(serial.split().1.with_dma(channels.3));
+    let mut buf_option = Some(singleton!(: [u8; 8] = [0; 8]).unwrap());
+    // let (buf, rx) = rx.read(buf).wait();
+    // hprintln!("{:?}", buf).unwrap();
+    // let (buf, rx) = rx.read(buf).wait();
+    // hprintln!("{:?}", buf).unwrap();
+    // let (buf, rx) = rx.read(buf).wait();
+    // hprintln!("{:?}", buf).unwrap();
 
     // Setup code
     lcd.reset();
@@ -117,8 +117,12 @@ fn main() -> ! {
     // let zero: &mut usize = &mut 0;
     let zero: usize = 0;
     loop {
+        let rx = rx_option.take().unwrap();
+        let buf = buf_option.take().unwrap();
         let (buf, rx) = rx.read(buf).wait();
         hprintln!("{:?}", buf).unwrap();
+        rx_option.replace(rx);
+        buf_option.replace(buf);
         // if _buf.len() > zero {
         // for x in _buf.as_mut() {
             // hprintln!("{}", x).unwrap();
