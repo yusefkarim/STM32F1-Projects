@@ -4,15 +4,10 @@
 extern crate panic_halt;
 
 use cortex_m_semihosting::hprint;
-// use core::ops::Deref;
-// use core::cell::RefCell;
 use cortex_m::asm::nop;
-// use cortex_m::interrupt::{self, Mutex};
 use cortex_m_rt::{entry};
 use stm32f1::stm32f103;
 
-// static PC: Mutex<RefCell<Option<stm32f103::GPIOC>>> =
-             // Mutex::new(RefCell::new(None));
 
 #[entry]
 fn main() -> ! {
@@ -49,40 +44,16 @@ fn main() -> ! {
     // Baudrate of 9600 assuming 8 MHz clock (see Section 27.3.4 of manual)
     usart3.brr.write(|w| w.div_mantissa().bits(0x34).div_fraction().bits(0x1));
     // Enable transmission and reception, then enable USART
-    usart3.cr1.write(|w| w.te().enabled().re().enabled().ue().enabled());
-
-    // interrupt::free(|cs| {
-        // PC.borrow(cs).replace(Some(board_peripherals.GPIOC));
-    // });
+    usart3.cr1.write(|w| w.ue().enabled().re().enabled().te().enabled());
 
     hprint!("Starting to read serial data...\n").unwrap();
     let mut read_byte: u16;
     loop {
         while !usart3.sr.read().rxne().bit_is_set() { nop(); }
-        // if usart3.sr.read().rxne().bit_is_set() {
         read_byte = usart3.dr.read().dr().bits();
-        // hprint!("0x{:X} ", read_byte).unwrap();
-        // }
-        // TODO: Get write working here (just write whatever is read for now)
-        // TODO: Change clock frequency to 72 MHz
         while !usart3.sr.read().txe().bit_is_set() { nop(); }
         usart3.dr.write(|w| w.dr().bits(read_byte));
         while !usart3.sr.read().tc().bit_is_set() { nop(); }
         usart3.sr.write(|w| w.tc().clear_bit());
-        // usart3.sr.read().bits();
-        // hprint!("Done?").unwrap();
     }
 }
-
-// #[exception]
-// fn SysTick() {
-    // interrupt::free(|cs| {
-        // if let Some(ref gpioc) = PC.borrow(cs).borrow().deref() {
-            // if gpioc.odr.read().odr13().is_high() {
-                // gpioc.odr.write(|w| w.odr13().low());
-            // } else {
-                // gpioc.odr.write(|w| w.odr13().high());
-            // }
-        // }
-    // });
-// }
