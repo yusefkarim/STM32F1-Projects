@@ -1,0 +1,20 @@
+[package]
+name = "hd44780-driver"
+version = "0.3.0"
+keywords = ["no-std", "lcd", "embedded-hal-driver", "embedded-hal", "hd44780"]
+categories = ["embedded", "hardware-support", "no-std"]
+description = "A crate to use HD44780 compliant displays with embedded-hal"
+authors = ["John Doneth <doneth7@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/JohnDoneth/hd44780-driver"
+documentation = "https://docs.rs/hd44780-driver"
+readme = "README.md"
+
+[dependencies]
+# A Hardware Abstraction Layer (HAL) for embedded systems
+# https://docs.rs/embedded-hal/0.2.3/embedded_hal/
+embedded-hal = "0.2.3"
+
+# Minimal and reusable non-blocking I/O layer
+# https://docs.rs/nb/0.1.2/nb/
+nb = "0.1.2"
