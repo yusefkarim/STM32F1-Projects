@@ -4,10 +4,10 @@
 extern crate panic_halt;
 
 use nb::block;
-// use cortex_m::{self, asm::nop};
-use cortex_m::{self, singleton};
+use cortex_m::{self, asm::nop};
 // use embedded_hal::digital::v2::OutputPin;
-use cortex_m_rt::{entry, exception, ExceptionFrame};
+use cortex_m_rt::entry;
+use stm32f1::stm32f103::{interrupt, Interrupt};
 use stm32f1xx_hal::{
     prelude::*,
     pac,
@@ -16,8 +16,9 @@ use stm32f1xx_hal::{
 };
 // use core::fmt::Write;
 use hd44780_driver::{Cursor, CursorBlink, Display, DisplayMode, HD44780};
-use cortex_m_semihosting::hprintln;
+use cortex_m_semihosting::hprint;
 
+/*
 macro_rules! read_and_write_line {
 	($rx: expr, $lcd: expr) => {
         let mut ch: char;
@@ -37,7 +38,7 @@ macro_rules! read_and_write_line {
             }
         }
     };
-}
+}*/
 
 #[entry]
 fn main() -> ! {
@@ -50,8 +51,7 @@ fn main() -> ! {
     let mut rcc = board_peripherals.RCC.constrain();
     // Alternate GPIO register
     let mut afio = board_peripherals.AFIO.constrain(&mut rcc.apb2);
-    // Channels for DMA1 controller
-    let channels = board_peripherals.DMA1.split(&mut rcc.ahb);
+    let mut nvic = core_peripherals.NVIC;
 
     // Freeze the configuration of all clocks, storing them in clocks var
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
@@ -76,26 +76,14 @@ fn main() -> ! {
         (tx, rx),
         &mut afio.mapr,
         Config::default()
-            .baudrate(4800_u32.bps())
+            .baudrate(9600_u32.bps())
             .stopbits(StopBits::STOP1)
             .parity_none(),
         clocks,
         &mut rcc.apb1,
     );
 
-    // let (mut tx, mut rx) = serial.split();
-    let mut rx_option = Some(serial.split().1.with_dma(channels.3));
-    let mut buf_option = Some(singleton!(: [u8; 8] = [0; 8]).unwrap());
-    // let (buf, rx) = rx.read(buf).wait();
-    // hprintln!("{:?}", buf).unwrap();
-    // let (buf, rx) = rx.read(buf).wait();
-    // hprintln!("{:?}", buf).unwrap();
-    // let (buf, rx) = rx.read(buf).wait();
-    // hprintln!("{:?}", buf).unwrap();
-
-    // Setup code
-    lcd.reset();
-    lcd.clear();
+    let (mut tx, mut rx) = serial.split();
 
     lcd.set_display_mode(
         DisplayMode {
@@ -105,24 +93,25 @@ fn main() -> ! {
         }
     );
 
+    rx.listen();
+    nvic.enable(Interrupt::USART3);
+
+    lcd.reset();
+    lcd.clear();
 
 
     // lcd.write_str(top_msg).unwrap();
-    // let intro_message = b"Welcome! Enter messages to display: ";
-    // for byte in intro_message.iter() {
-        // block!(tx.write(*byte)).ok();
-    // }
+    let intro_message = b"Welcome! Enter messages to display: ";
+    for byte in intro_message.iter() {
+        block!(tx.write(*byte)).ok();
+    }
 
     // let mut trigger_byte: u8;
-    // let zero: &mut usize = &mut 0;
-    let zero: usize = 0;
     loop {
-        let rx = rx_option.take().unwrap();
-        let buf = buf_option.take().unwrap();
-        let (buf, rx) = rx.read(buf).wait();
-        hprintln!("{:?}", buf).unwrap();
-        rx_option.replace(rx);
-        buf_option.replace(buf);
+        nop();
+        // hprintln!("{:?}", buf).unwrap();
+        // rx_option.replace(rx);
+        // buf_option.replace(buf);
         // if _buf.len() > zero {
         // for x in _buf.as_mut() {
             // hprintln!("{}", x).unwrap();
@@ -144,8 +133,8 @@ fn main() -> ! {
 }
 
 
-#[exception]
-fn HardFault(ef: &ExceptionFrame) -> ! {
-    panic!("{:#?}", ef);
+#[interrupt]
+fn USART3() {
+    hprint!("Oops").unwrap();
 }
 // ~Hello*world!*
