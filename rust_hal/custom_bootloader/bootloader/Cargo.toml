@@ -1,3 +1,5 @@
+# rustup toolchain install nightly
+# rustup override set nightly
 [package]
 name = "usb"
 version = "0.1.0"
@@ -38,7 +40,8 @@ cortex-m-rtfm = "0.4.0"
 
 # Provides low-level access to registers and assembly instructions
 # https://docs.rs/cortex-m/0.6.0/cortex_m/
-cortex-m = "0.6.0"
+cortex-m = { version = "0.6.0", features = ["inline-asm"] }
+# cortex-m = "0.6.0"
 
 # Provides startup code and useful attributes
 # https://docs.rs/cortex-m-rt/0.6.10/cortex_m_rt/
@@ -54,12 +57,11 @@ embedded-hal = "0.2.3"
 
 # Hardware Abstraction Library for STM32F1
 # https://docs.rs/stm32f1xx-hal/0.4.0/stm32f1xx_hal
-# stm32f1xx-hal = {version = "0.4.0", features = ["rt", "stm32f103"]} 
-stm32f1xx-hal = { version = "0.3", features = ["rt"] }
+stm32f1xx-hal = {version = "0.4.0", features = ["rt", "stm32f103"]} 
 
 # USB device driver for STM32
 # https://docs.rs/usb-device/0.2.3/usb_device/
-stm32-usbd = {version = "0.3.1", features = ["stm32f103xx"]}
+stm32-usbd = {version = "0.4.0", features = ["stm32f103xx"]}
 
 # CDC-ACM USB serial port and class
 # https://docs.rs/usbd-serial/0.1.0/usbd_serial/

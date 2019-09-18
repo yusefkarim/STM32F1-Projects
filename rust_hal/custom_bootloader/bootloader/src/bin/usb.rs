@@ -3,35 +3,22 @@
 #![no_main]
 extern crate panic_halt;
 
-use rtfm::app;
+// Project specific imports
+use usb::handle_usb;
+// Rust core and external imports
 use core::str;
+use rtfm::app;
 use cortex_m::asm::delay;
-// use stm32f1xx_hal::{prelude::*, pac};
-// use embedded_hal::digital::v2::OutputPin;
+use cortex_m::register::{msp, pc};
+use embedded_hal::digital::v2::OutputPin;
 use stm32f1xx_hal::prelude::*;
 use stm32_usbd::{UsbBusType, UsbBus};
 use usbd_serial::{SerialPort, USB_CLASS_CDC};
 use usb_device::prelude::{UsbDevice, UsbDeviceBuilder, UsbVidPid};
 use usb_device::bus::UsbBusAllocator;
 
-
-macro_rules! handle_usb {
-    ($usb_device: expr, $usb_serial: expr) => {
-        if $usb_device.poll(&mut [&mut *$usb_serial]) {
-            let mut buf = [0u8; 8];
-
-            if let Ok(count) =  $usb_serial.read(&mut buf) {
-                if count > 0 {
-                    if let Ok(data) = str::from_utf8(&buf[0..count]) {
-                        if data.contains("hi") {
-                            $usb_serial.write(b"hello").ok();
-                        }
-                    }
-                }
-            }
-        }
-    };
-}
+static USER_APPLICATION_CODE: u32 = 0x8005000;
+static USER_APPLICATION_RESET_HANDLER: u32 = USER_APPLICATION_CODE + 4;
 
 #[app(device = stm32f1xx_hal::stm32)]
 const APP: () = {
@@ -51,16 +38,16 @@ const APP: () = {
             .cfgr
             .use_hse(8.mhz())
             .sysclk(72.mhz())
-            .pclk1(24.mhz())
+            .pclk1(36.mhz())
             .freeze(&mut flash.acr);
 
         let mut led = gpioc.pc13.into_push_pull_output(&mut gpioc.crh);
         let mut usb_data_plus = gpioa.pa12.into_push_pull_output(&mut gpioa.crh);
 
         // Turn off on-board LED
-        led.set_high();
+        led.set_high().unwrap();
         // Pull the D+ pin down to send a RESET condition to the USB bus
-        usb_data_plus.set_low();
+        usb_data_plus.set_low().unwrap();
         // Delay for 720000 clock cycles
         delay(clocks.sysclk().0 / 100);
 
@@ -92,5 +79,4 @@ const APP: () = {
     fn USB_LP_CAN_RX0() {
         handle_usb!(resources.USB_DEVICE, resources.USB_SERIAL);
     }
-
 };
