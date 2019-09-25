@@ -1,0 +1,9 @@
+[build]
+# Instruction set of Cortex-M3 (used in BluePill)
+target = "thumbv7m-none-eabi"
+
+rustflags = [
+  # Use the link.x script from the cortex-m-rt crate
+  "-C", "link-arg=-Tlink.x",
+]
+
