@@ -18,22 +18,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "asm_example"
+version = "0.1.0"
+dependencies = [
+ "cortex-m 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cortex-m-rt 0.6.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "panic-halt 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "stm32f1 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "bare-metal"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "rustc_version 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "blinky_interrupt"
-version = "0.1.0"
-dependencies = [
- "cortex-m 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "cortex-m-rt 0.6.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "lib 0.1.0",
- "panic-halt 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "stm32f1 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -72,15 +71,6 @@ version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "typenum 1.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "lib"
-version = "0.1.0"
-dependencies = [
- "cortex-m 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "cortex-m-rt 0.6.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "stm32f1 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

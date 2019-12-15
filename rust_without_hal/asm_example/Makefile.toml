@@ -25,3 +25,7 @@ script = ["${OBJCOPY} -O binary ${RELEASE_EXE} ${RELEASE_BIN}"]
 [tasks.erase]
 description = "Uses OpenOCD to erase all flash memory on target board"
 script = ["${OPENOCD_CMD} \"init; reset halt; stm32f1x mass_erase 0; exit\""]
+
+[tasks.host]
+description = ""
+script = ["${OPENOCD_CMD} \"init; arm semihosting enable\""]

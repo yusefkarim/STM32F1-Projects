@@ -1,0 +1,39 @@
+# Author: Yusef Karim
+# To install cargo-make run: cargo install cargo-make
+[env]
+SERVER_EXE   = "target/thumbv7m-none-eabi/debug/server"
+SERVER_BIN   = "target/thumbv7m-none-eabi/debug/server.bin"
+CLIENT_EXE   = "target/thumbv7m-none-eabi/debug/client"
+CLIENT_BIN   = "target/thumbv7m-none-eabi/debug/client.bin"
+TRIPLE 		  = "arm-none-eabi"
+GDB			  = "${TRIPLE}-gdb"
+OBJCOPY		  = "${TRIPLE}-objcopy"
+OPENOCD_TRGT  = "-f target/stm32f1x.cfg"
+OPENOCD_INTF  = "-f interface/stlink-v2.cfg"
+OPENOCD_CMD	  = "openocd ${OPENOCD_INTF} ${OPENOCD_TRGT} -c"
+
+
+[tasks.flash_server]
+description = ""
+dependencies = ["build", "bin_server"]
+script = ["${OPENOCD_CMD} \"program ${SERVER_BIN} reset exit 0x08000000\""]
+
+[tasks.bin_server]
+description = "Copies compiled executable to raw binary using objcopy"
+dependencies = ["build"]
+script = ["${OBJCOPY} -O binary ${SERVER_EXE} ${SERVER_BIN}"]
+
+[tasks.flash_client]
+description = ""
+dependencies = ["build", "bin_client"]
+script = ["${OPENOCD_CMD} \"program ${CLIENT_BIN} reset exit 0x08000000\""]
+
+[tasks.bin_client]
+description = "Copies compiled executable to raw binary using objcopy"
+dependencies = ["build"]
+script = ["${OBJCOPY} -O binary ${CLIENT_EXE} ${CLIENT_BIN}"]
+
+
+[tasks.erase]
+description = "Uses OpenOCD to erase all flash memory on target board"
+script = ["${OPENOCD_CMD} \"init; reset halt; stm32f1x mass_erase 0; exit\""]

@@ -3,27 +3,31 @@
 #![no_main]
 extern crate panic_halt;
 
-use core::ops::Deref;
+use lib::system_clock_init;
 use core::cell::RefCell;
-use cortex_m::{self, peripheral::syst::SystClkSource, asm::nop};
+use core::ops::Deref;
 use cortex_m::interrupt::{self, Mutex};
+use cortex_m::{asm::wfi, peripheral::syst::SystClkSource};
 use cortex_m_rt::{entry, exception};
 use stm32f1::stm32f103;
 
-static PC: Mutex<RefCell<Option<stm32f103::GPIOC>>> =
-             Mutex::new(RefCell::new(None));
+static PC: Mutex<RefCell<Option<stm32f103::GPIOC>>> = Mutex::new(RefCell::new(None));
 
 #[entry]
 fn main() -> ! {
     let core_peripherals = cortex_m::Peripherals::take().unwrap();
     let board_peripherals = stm32f103::Peripherals::take().unwrap();
     let mut systick = core_peripherals.SYST;
-    let gpioc = &board_peripherals.GPIOC;
-    let rcc = &board_peripherals.RCC;
+    let gpioc = board_peripherals.GPIOC;
+    let flash = board_peripherals.FLASH;
+    let rcc = board_peripherals.RCC;
+
+    system_clock_init(&flash, &rcc);
 
     /* SysTick configuration */
     systick.set_clock_source(SystClkSource::Core);
-    systick.set_reload(72_000_000);
+    // Reload value must be less than 0x00FFFFFF
+    systick.set_reload(1_440_000 - 1);
     systick.clear_current();
 
     /* GPIO Port C configuration */
@@ -33,7 +37,7 @@ fn main() -> ! {
     gpioc.crh.write(|w| w.mode13().output().cnf13().push_pull());
     gpioc.odr.write(|w| w.odr13().low());
     interrupt::free(|cs| {
-        PC.borrow(cs).replace(Some(board_peripherals.GPIOC));
+        PC.borrow(cs).replace(Some(gpioc));
     });
 
     /* Enable SysTick counter and interrupt */
@@ -41,7 +45,7 @@ fn main() -> ! {
     systick.enable_interrupt();
 
     loop {
-        nop();
+        wfi();
     }
 }
 

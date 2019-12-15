@@ -26,12 +26,10 @@ fn main() -> ! {
     let mut onboard_led = gpioc.pc13.into_push_pull_output(&mut gpioc.crh);
 
     /* Enable SysTick counter to trigger an update every second */
-    let mut systick = Timer::syst(core_peripherals.SYST, 1.hz(), clocks);
+    let mut systick = Timer::syst(core_peripherals.SYST, 10.hz(), clocks);
 
     loop {
         block!(systick.wait()).unwrap();
-        onboard_led.set_high().unwrap();
-        block!(systick.wait()).unwrap();
-        onboard_led.set_low().unwrap();
+        onboard_led.toggle().unwrap();
     }
 }

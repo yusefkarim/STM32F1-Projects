@@ -1,25 +1,15 @@
 [package]
-name = "blinky_interrupt"
+name = "lib"
 version = "0.1.0"
 authors = ["Yusef Karim <yusefkarim@riseup.net>"]
 edition = "2018"
 
 [profile.dev]
-# Optimize for size
 opt-level = 's'
-# Link with link time optimization (lto)
 lto = true
-# Enable debugging
 debug = false
 
 [dependencies]
-# Collection of useful functions I made myself
-lib = {path = "../lib"}
-
-# Provides panic handler for halting the CPU (in an infinite loop)
-# https://lib.rs/crates/panic-halt
-panic-halt = "0.2.0"
-
 # Provides low-level access to registers and assembly instructions
 # https://lib.rs/crates/cortex-m
 cortex-m = {version = "0.6.0", features = ["const-fn"]}
